@@ -3,6 +3,8 @@
 ## Course Final Project - Design Challenge 2
 ### [Yuchen Zeng](https://github.com/yzeng58), [Lihe Liu](https://github.com/liulihe954)
 
+Try our tool: https://tiny-visualizer.herokuapp.com/.
+
 ### 1. Motivation and Goal
 Stacked bar graphs (SBG) can be used to visualize the quantitative relationship that exists between a main category and its subcategories. Each bar represents a primary category and will be divided into different section that represents the subcategories for a second categorical variable. 
 
