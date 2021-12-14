@@ -16,9 +16,11 @@ The goal of this project is to develop a web app that visualizes the input datas
 
 Our main contribution to this project will be:
 
-    * developing an efficient algorithm which automatically adapts a stacked bar chart to a smaller size;
-    * building a small program which takes a dataset, required figure size, two categorical variables and one numerical positive variable as input, and output a stacked bar chart in the required figure size;
-    * embedding the resizing algorithm into the program and building a user-friendly web app that can automatically generate customized stacked bar charts.
+    - developing an efficient algorithm which automatically adapts a stacked bar chart to a smaller size;
+
+    - building a small program which takes a dataset, required figure size, two categorical variables and one numerical positive variable as input, and output a stacked bar chart in the required figure size;
+
+    - embedding the resizing algorithm into the program and building a user-friendly web app that can automatically generate customized stacked bar charts.
 
 #### 2.2 Implementation
 To run our application, please first download this repository.
