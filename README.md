@@ -49,15 +49,18 @@ The left panel has:
 
 
 #### 2.2 Implementation
-To run our application, please first download this repository.
+[Stacked bar chart visualizer](https://tiny-visualizer.herokuapp.com/) is currently 
+available online.
 
-Then run `python app.py`.
+Alternatively: 
+
+user could download this repository and run `python app.py`.
 
 Then access http://127.0.0.1:1234/ using your web browser.
 
-
 ### 3. Application Framework
 This tool is developed using [Dash apps](https://plotly.com/dash/)
+This tool is deployed with [Heroku](https://www.heroku.com/).
 
 
 
