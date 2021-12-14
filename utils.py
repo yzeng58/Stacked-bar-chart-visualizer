@@ -39,7 +39,6 @@ def process_df(df, width, height, x, y, sort_opt):
     df['y_total'] = df[y].apply(func = sum, axis = 1)
     opt = True if sort_opt == 'a' else False
     df = df.sort_values(by = 'y_total', ascending = opt)
-    df[x] = df[x].apply(func = lambda x: str(x)[:height//25]).reset_index(drop = True)
 
     num = bar_num(df, width, height, x, y)
     if num < len_x: # need subset

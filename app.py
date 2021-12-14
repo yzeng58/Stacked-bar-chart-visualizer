@@ -54,8 +54,8 @@ df2 = pd.DataFrame({
 
 dfs = {'Medals': df, 'US export of plastic scrap': df2}
 
-width_int = (200,1200,900)
-height_int = (200, 1000, 1000)
+width_int = (100,1200,900)
+height_int = (100, 1000, 1000)
 default_fig = px.bar(df, x="Team/NOC", y=['Gold', 'Silver', 'Bronze'], width = 500, height = 500)
 
 default_fig.update_layout(
@@ -306,6 +306,16 @@ def update_figure(tab_name, width, height, y, x, content, sort_opt, fig_json, fi
     for data in fig.data:
         data["width"] = bar_width # Change this value for bar widths
 
+    if width < 200:
+        fontsize = width/100*6  
+        xtickscut = 25
+    else:
+        fontsize =  12
+        xtickscut = 40
+
+    fontsize = width/100*6 if width < 200 else 12
+    xtickscut = 25 if height >= 200 else 40
+
     fig.update_layout(
         plot_bgcolor=colors['background'],
         paper_bgcolor=colors['background'],
@@ -315,11 +325,20 @@ def update_figure(tab_name, width, height, y, x, content, sort_opt, fig_json, fi
         legend = dict(
             orientation="h",
             yanchor="bottom",
-            y=1,
-            xanchor="right",
-            x=1
+            y=0.9,
+            xanchor="left",
+            x=0.1,
+            itemsizing='constant'
         ),
-        margin = dict(l=0, r=0, t=0, b=0)
+        margin = dict(l=0, r=0, t=0, b=0),
+        font=dict(
+            size=fontsize,
+        ),
+        xaxis = dict(
+            tickmode = 'array',
+            tickvals = df[x].tolist(),
+            ticktext = df[x].apply(func = lambda x: str(x)[:height//xtickscut]).tolist()
+        )
     )
     return fig
 
