@@ -1,7 +1,7 @@
 # Run this app with `python app.py` and
 # visit http://127.0.0.1:8050/ in your web browser.
 
-import dash, os, base64, datetime, io
+import dash, os
 import dash_table as dt
 import dash_core_components as dcc
 import dash_html_components as html
@@ -10,6 +10,7 @@ import pandas as pd
 import plotly.express as px
 from dash.dependencies import Input, Output, State
 import plotly.graph_objects as go
+from utils import *
 
 GRAPH_INTERVAL = os.environ.get("GRAPH_INTERVAL", 5000)
 app = dash.Dash(
@@ -40,6 +41,8 @@ colors = {
 df = pd.read_csv('Medals.csv')
 df = df.sort_values('Total', ascending = False)
 
+first_n_rows = 5
+
 df2 = pd.DataFrame({
     'year': [1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
          2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012],
@@ -52,26 +55,14 @@ df2 = pd.DataFrame({
 dfs = {'Medals': df, 'US export of plastic scrap': df2}
 
 width_int = (200,1200,900)
-height_int = (200, 1000, 800)
-default_fig = px.bar(df, x="Team/NOC", y=['Gold', 'Silver', 'Bronze'], title="Resized figure", width = 500, height = 500)
+height_int = (200, 1000, 1000)
+default_fig = px.bar(df, x="Team/NOC", y=['Gold', 'Silver', 'Bronze'], width = 500, height = 500)
 
 default_fig.update_layout(
     plot_bgcolor=colors['background'],
     paper_bgcolor=colors['background'],
     font_color=colors['text']
 )
-
-def parse_contents(contents, filename):
-    _, content_string = contents.split(',')
-    decoded = base64.b64decode(content_string)
-    try:
-        assert(filename.split('.')[-1] == 'csv')
-        df = pd.read_csv(io.StringIO(decoded.decode('utf-8')))
-    except Exception as e:
-        return html.Div([
-            'Only .csv file is supported.'
-        ])
-    return df
 
 def header():
     return [
@@ -120,25 +111,25 @@ def right_panel():
                     ),
                 ]),# , style={'width': '50%', 'display': 'inline-block'}),
 
+                html.Hr(),
                 html.Div([
-                    html.H6('Table Preview (first 10 rows)'),
+                    html.H6('Table Preview (first 5 rows)'),
                     dt.DataTable(
                         style_data={
                             'whiteSpace': 'normal',
                             'height': 'auto',
                             'lineHeight': '15px',
                         },
-                        id='table', data=df[:10].to_dict('records'),
+                        id='table', data=df[:first_n_rows].to_dict('records'),
                         columns=[{"name": i, "id": i} for i in df.columns],
                     ),
                 ]),
 
+                html.Hr(),
                 html.Div([
                     html.H6('Settings'),
                 ]), 
-                
                 html.Div([
-                    html.Br(),
                     html.Label('Variable y'),
                     dcc.Dropdown(
                         id='y',
@@ -161,17 +152,19 @@ def right_panel():
                     ),
                 ], style={'width': '50%', 'display': 'inline-block'}),
 
-                # html.Div([
-                #     html.Label('Variable y'),
-                #     dcc.Dropdown(
-                #         id='y',
-                #         options=[{'label': i, 'value': i} for i in ['None']],
-                #         value='None'
-                #     ),
-                # ], style={'width': '50%', 'display': 'inline-block'}),
-
-                html.Br(), # line break
-                html.Br(), # line break
+                html.Div([
+                    html.Label('Sort by y'),
+                    dcc.RadioItems(
+                        id = 'sort',
+                        options=[
+                            {'label': 'Descending Order', 'value': 'd'},
+                            {'label': 'Ascending Order', 'value': 'a'},
+                            {'label': 'No', 'value': 'n'}
+                        ],
+                        value='n',
+                        labelStyle={'display': 'inline-block'}
+                    ),
+                ]),
                 html.Div([
                     html.Label('Width'),
                     dcc.Slider(
@@ -242,7 +235,7 @@ def update_data(tab_name, content, filename):
     if tab_name == 'US export of plastic scrap':
         df = dfs[tab_name]
         return (
-            df[:10].to_dict('records'),
+            df[:first_n_rows].to_dict('records'),
             [{"name": i, "id": i} for i in df.columns],
             [
                 {'label': 'China', 'value': 'China'},
@@ -255,7 +248,7 @@ def update_data(tab_name, content, filename):
     elif tab_name == 'Medals':
         df = dfs[tab_name]
         return (
-            df[:10].to_dict('records'),
+            df[:first_n_rows].to_dict('records'),
             [{"name": i, "id": i} for i in df.columns],
             [  
                 {'label': 'Gold', 'value': 'Gold'},
@@ -288,32 +281,45 @@ def update_data(tab_name, content, filename):
         Input('height', 'value'),
         Input('y', 'value'),
         Input('x', 'value'),
-        Input('upload-data', 'contents')
+        Input('upload-data', 'contents'),
+        Input('sort', 'value')
     ],
     [
         State("graph", "figure"),
         State('upload-data', 'filename')
     ]
 )
-def update_figure(tab_name, width, height, y, x, content, fig_json, filename):
+def update_figure(tab_name, width, height, y, x, content, sort_opt, fig_json, filename):
     fig = go.Figure(fig_json)
     if tab_name in ['US export of plastic scrap', 'Medals']:
-        fig = px.bar(dfs[tab_name], x=x, y=y, title="Resized figure")
-    else:
+        df = dfs[tab_name]
+    else: 
         df = parse_contents(content, filename)
-        if x and y:
-            fig = px.bar(df, x=x, y=y, title="Resized figure")
-        else:
-            fig = px.bar(title="Resized figure")
+
+    if x and y:
+        df = process_df(df, width, height, x, y, sort_opt)
+        fig = px.bar(df, x=x, y=y, width = width)
+    else:
+        fig = px.bar(width = width)
+
+    for data in fig.data:
+        data["width"] = 1 # Change this value for bar widths
 
     fig.update_layout(
         plot_bgcolor=colors['background'],
         paper_bgcolor=colors['background'],
         font_color=colors['text'],
         width = int(width),
-        height = int(height)
+        height = int(height),
+        legend = dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1,
+            xanchor="right",
+            x=1
+        ),
+        margin = dict(l=0, r=0, t=0, b=0)
     )
-    fig.update_layout(width = int(width), height = int(height))
     return fig
 
 @app.callback(
@@ -332,28 +338,6 @@ def update_output(list_of_contents, list_of_names):
             return ([{'label': i, 'value': i} for i in ['Medals', 'US export of plastic scrap'] + list_of_names], list_of_names[-1])
     else:
         return ([{'label': i, 'value': i} for i in ['Medals', 'US export of plastic scrap']], 'Medals')
-
-# upload dataset
-# @app.callback(
-#     Output('graph', 'figure'),
-#     [
-#         Input('data', 'value'),
-#     ],
-# )
-# def update_figure(tab_name, width, height, y, x, fig_json):
-#     fig = go.Figure(fig_json)
-#     fig = px.bar(dfs[tab_name], x=x, y=y, title="Resized figure")
-
-#     fig.update_layout(
-#         plot_bgcolor=colors['background'],
-#         paper_bgcolor=colors['background'],
-#         font_color=colors['text'],
-#         width = int(width),
-#         height = int(height)
-#     )
-#     fig.update_layout(width = int(width), height = int(height))
-#     return fig
-
 
 
 # get the screen size
