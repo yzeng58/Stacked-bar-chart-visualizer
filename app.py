@@ -313,7 +313,7 @@ def update_figure(tab_name, width, height, y, x, content, sort_opt, fig_json, fi
         fontsize =  12
         xtickscut = 40
 
-    fontsize = width/100*6 if width < 200 else 12
+    fontsize = 6 if min(width,height) <= 325 else 12
     xtickscut = 25 if height >= 200 else 40
 
     fig.update_layout(
@@ -330,14 +330,14 @@ def update_figure(tab_name, width, height, y, x, content, sort_opt, fig_json, fi
             x=0.1,
             itemsizing='constant'
         ),
-        margin = dict(l=0, r=0, t=0, b=0),
-        font=dict(
-            size=fontsize,
-        ),
         xaxis = dict(
             tickmode = 'array',
             tickvals = df[x].tolist(),
-            ticktext = df[x].apply(func = lambda x: str(x)[:height//xtickscut]).tolist()
+            ticktext = df[x].apply(func = lambda x: x[:height//xtickscut]).tolist()
+        ),
+        margin = dict(l=0, r=0, t=0, b=0),
+        font=dict(
+            size=fontsize,
         )
     )
     return fig
@@ -394,4 +394,5 @@ def update_output(list_of_contents, list_of_names):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True, port = 1234)
+    app.run_server(debug=True)
+

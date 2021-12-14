@@ -33,6 +33,7 @@ def sample_prob(num, df, x, y):
 def process_df(df, width, height, x, y, sort_opt):
     df = clean_df(df, y)
     bar_width = 0.7
+    df[x] = df[x].apply(func = str)
 
     # sort
     len_x = len(df[x])
