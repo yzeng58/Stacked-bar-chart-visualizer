@@ -290,6 +290,7 @@ def update_data(tab_name, content, filename):
     ]
 )
 def update_figure(tab_name, width, height, y, x, content, sort_opt, fig_json, filename):
+    bar_width = 0.7
     fig = go.Figure(fig_json)
     if tab_name in ['US export of plastic scrap', 'Medals']:
         df = dfs[tab_name]
@@ -297,13 +298,13 @@ def update_figure(tab_name, width, height, y, x, content, sort_opt, fig_json, fi
         df = parse_contents(content, filename)
 
     if x and y:
-        df = process_df(df, width, height, x, y, sort_opt)
+        df, bar_width = process_df(df, width, height, x, y, sort_opt)
         fig = px.bar(df, x=x, y=y, width = width)
     else:
         fig = px.bar(width = width)
 
     for data in fig.data:
-        data["width"] = 1 # Change this value for bar widths
+        data["width"] = bar_width # Change this value for bar widths
 
     fig.update_layout(
         plot_bgcolor=colors['background'],
