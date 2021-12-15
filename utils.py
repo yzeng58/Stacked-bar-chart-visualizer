@@ -38,8 +38,10 @@ def process_df(df, width, height, x, y, sort_opt):
     # sort
     len_x = len(df[x])
     df['y_total'] = df[y].apply(func = sum, axis = 1)
-    opt = True if sort_opt == 'a' else False
-    df = df.sort_values(by = 'y_total', ascending = opt)
+    if sort_opt == 'a':
+        df = df.sort_values(by = 'y_total', ascending = True)
+    elif sort_opt == 'd':
+        df = df.sort_values(by = 'y_total', ascending = False)
 
     num = bar_num(df, width, height, x, y)
     if num < len_x: # need subset
